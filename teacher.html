@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>O‘qituvchi paneli</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="sidebar">
+      <div>
+        <div class="logo">
+          <img id="teacherProfilePic" src="https://via.placeholder.com/80/007bff/ffffff?text=TCH" alt="Teacher Logo">
+          <h3 id="teacherNameSidebar">O'qituvchi</h3>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#" class="active" onclick="showTeacherSection('main-dashboard', this)"><i class="fas fa-home"></i> <span>Asosiy</span></a></li>
+            <li><a href="#" onclick="showTeacherSection('profile-settings', this)"><i class="fas fa-user-cog"></i> <span>Profil sozlamalari</span></a></li>
+            </ul>
+        </nav>
+      </div>
+      <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Chiqish</span></button>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h1>O‘qituvchi paneli</h1>
+        <div class="profile-info">
+          <img id="headerTeacherProfilePic" src="https://via.placeholder.com/40/007bff/ffffff?text=T" alt="Teacher Avatar">
+          <span id="headerTeacherName">O'qituvchi</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+            <div class="color-picker-container">
+                <label for="textColorPicker" style="margin-right: 5px;">Matn Rangi:</label>
+                <input type="color" id="textColorPicker" value="#333333">
+            </div>
+            <button id="darkModeToggle" class="dark-mode-toggle">
+                <i class="fas fa-moon"></i> <span class="button-text">Dark Mode</span>
+            </button>
+        </div>
+      </div>
+
+      <div id="main-dashboard" class="content-section card">
+        <h3>Fan tanlang:</h3>
+        <select id="subjectSelect">
+          <option value="">Fanni tanlang</option>
+        </select>
+
+        <h3 style="margin-top: 20px;">O'quvchilar ro'yxati:</h3>
+        <div class="responsive-table-container">
+            <table width="100%" id="studentTable">
+              <thead>
+                <tr>
+                  <th>Ism Familiya</th>
+                  <th>Davomat</th>
+                  <th>Baho</th>
+                  <th>Amallar</th>
+                </tr>
+              </thead>
+              <tbody>
+                </tbody>
+            </table>
+        </div>
+        <button onclick="saveChanges()" style="margin-top: 20px;">O'zgarishlarni saqlash</button>
+      </div>
+
+      <div id="profile-settings" class="content-section card" style="display:none;">
+        <h3>Profil sozlamalari</h3>
+        <div class="profile-picture-container">
+          <img id="teacherProfilePreview" src="https://via.placeholder.com/120/007bff/ffffff?text=Profil" alt="Profile Picture">
+          <input type="file" id="teacherProfilePicInput" accept="image/*">
+          <label for="teacherProfilePicInput" class="upload-button">Rasm yuklash</label>
+        </div>
+
+        <div class="form-group">
+          <label for="teacherLoginEdit">Login:</label>
+          <input type="text" id="teacherLoginEdit" placeholder="Yangi login">
+        </div>
+        <div class="form-group">
+          <label for="teacherPasswordEdit">Parol:</label>
+          <input type="password" id="teacherPasswordEdit" placeholder="Yangi parol">
+        </div>
+        <button onclick="updateTeacherProfile()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/teacher.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

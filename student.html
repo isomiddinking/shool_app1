@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>O‘quvchi sahifasi</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="sidebar">
+      <div>
+        <div class="logo">
+          <img id="studentProfilePic" src="https://via.placeholder.com/80/007bff/ffffff?text=STU" alt="Student Logo">
+          <h3 id="studentNameSidebar">O'quvchi</h3>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#" class="active" onclick="showStudentSection('main-dashboard', this)"><i class="fas fa-home"></i> <span>Asosiy</span></a></li>
+            <li><a href="#" onclick="showStudentSection('profile-settings', this)"><i class="fas fa-user-cog"></i> <span>Profil sozlamalari</span></a></li>
+            </ul>
+        </nav>
+      </div>
+      <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Chiqish</span></button>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h1>O‘quvchi sahifasi</h1>
+        <div class="profile-info">
+          <img id="headerStudentProfilePic" src="https://via.placeholder.com/40/007bff/ffffff?text=S" alt="Student Avatar">
+          <span id="headerStudentName">O'quvchi</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+            <div class="color-picker-container">
+                <label for="textColorPicker" style="margin-right: 5px;">Matn Rangi:</label>
+                <input type="color" id="textColorPicker" value="#333333">
+            </div>
+            <button id="darkModeToggle" class="dark-mode-toggle">
+                <i class="fas fa-moon"></i> <span class="button-text">Dark Mode</span>
+            </button>
+        </div>
+      </div>
+
+      <div id="main-dashboard" class="content-section card">
+        <h3>Sinfdoshlarim:</h3>
+        <div class="responsive-table-container">
+          <table width="100%" id="classmatesTable">
+            <thead>
+              <tr>
+                <th>Ism Familiya</th>
+                <th>Login</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h3 style="margin-top: 20px;">Baholar:</h3>
+        <div class="responsive-table-container">
+            <table id="marksTable">
+                <thead>
+                    <tr>
+                        <th>Fan</th>
+                        <th>Sana</th>
+                        <th>Baho</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+      </div>
+
+      <div id="profile-settings" class="content-section card" style="display:none;">
+        <h3>Profil sozlamalari</h3>
+        <div class="profile-picture-container">
+          <img id="studentProfilePreview" src="https://via.placeholder.com/120/007bff/ffffff?text=Profil" alt="Profile Picture">
+          <input type="file" id="studentProfilePicInput" accept="image/*">
+          <label for="studentProfilePicInput" class="upload-button">Rasm yuklash</label>
+        </div>
+
+        <div class="form-group">
+          <label for="studentLoginEdit">Login:</label>
+          <input type="text" id="studentLoginEdit" placeholder="Yangi login">
+        </div>
+        <div class="form-group">
+          <label for="studentPasswordEdit">Parol:</label>
+          <input type="password" id="studentPasswordEdit" placeholder="Yangi parol">
+        </div>
+        <button onclick="updateStudentProfile()">Saqlash</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/student.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

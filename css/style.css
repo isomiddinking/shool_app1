@@ -1,0 +1,675 @@
+/* General Styles */
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --background-color: #f4f7f6;
+  --card-background-color: #ffffff;
+  --text-color: #333333; /* Default text color */
+  --border-color: #e0e0e0;
+  --sidebar-bg: #343a40;
+  --sidebar-text: #ffffff;
+  --sidebar-hover-bg: #495057;
+  --header-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --button-bg: var(--primary-color);
+  --button-text: #ffffff;
+  --table-header-bg: #e9ecef;
+  --table-border: #dee2e6;
+  --logout-button-bg: #dc3545;
+  --logout-button-hover-bg: #c82333;
+  --active-link-bg: var(--primary-color);
+  --active-link-text: #ffffff;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+  --primary-color: #92bdfc;
+  --secondary-color: #adb5bd;
+  --background-color: #212529;
+  --card-background-color: #343a40;
+  --text-color: #f8f9fa; /* Dark mode text color */
+  --border-color: #495057;
+  --sidebar-bg: #1a1d20;
+  --sidebar-text: #e9ecef;
+  --sidebar-hover-bg: #2b3035;
+  --header-bg: #343a40;
+  --input-bg: #495057;
+  --input-border: #6c757d;
+  --button-bg: #0056b3; /* Darker primary for contrast */
+  --button-text: #ffffff;
+  --table-header-bg: #495057;
+  --table-border: #6c757d;
+  --logout-button-bg: #a71d2a;
+  --logout-button-hover-bg: #8b1822;
+  --active-link-bg: var(--primary-color);
+  --active-link-text: #ffffff;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color); /* Applied to body */
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary-color);
+}
+
+ul {
+  list-style: none;
+}
+
+/* Ensure all text elements use --text-color or inherit it */
+h1, h2, h3, h4, h5, h6,
+p, span, label, td, th, li {
+  color: !important;
+  transition: color 0.3s;
+}
+
+/* Special case for sidebar text elements which use --sidebar-text */
+.sidebar .logo h3,
+.sidebar nav ul li a,
+.sidebar .logout-button span,
+.sidebar nav ul li a i {
+  color: var(--sidebar-text);
+  transition: color 0.3s;
+}
+
+/* Login Box */
+.login-box {
+  width: 350px;
+  margin: 100px auto;
+  padding: 40px;
+  background-color: var(--card-background-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.login-box h2 {
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"],
+.login-box select {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  color: var(--text-color); /* Input text color */
+  font-size: 16px;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+}
+
+.login-box input[type="text"]::placeholder,
+.login-box input[type="password"]::placeholder {
+  color: var(--secondary-color);
+}
+
+.login-box button[type="submit"],
+.login-box button {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.login-box button:hover {
+  background-color: var(--primary-color);
+  opacity: 0.9;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar .logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar .logo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.sidebar .logo h3 {
+  font-size: 20px;
+}
+
+.sidebar nav ul li {
+  margin-bottom: 10px;
+}
+
+.sidebar nav ul li a {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-radius: 5px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+  background-color: var(--sidebar-hover-bg);
+  color: var(--active-link-text);
+}
+
+.sidebar nav ul li a i {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.sidebar .logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  background-color: var(--logout-button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar .logout-button:hover {
+  background-color: var(--logout-button-hover-bg);
+}
+
+.sidebar .logout-button i {
+  margin-right: 8px;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: var(--background-color);
+  transition: background-color 0.3s;
+}
+
+#subjectSelect{
+width: 500px;
+height: 50px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--header-bg);
+  padding: 20px 30px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.header h1 {
+  font-size: 26px;
+}
+
+.header .profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .profile-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--primary-color);
+}
+
+.header .profile-info span {
+  font-weight: bold;
+}
+
+/* Color Picker & Dark Mode Toggle */
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Added gap for spacing */
+}
+
+.color-picker-container label {
+  font-size: 15px;
+}
+
+.color-picker-container input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 35px;
+  height: 35px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
+}
+
+.color-picker-container input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-container input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.color-picker-container input[type="color"]::-moz-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-container input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.dark-mode-toggle {
+  background-color: var(--secondary-color);
+  color: var(--button-text);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.dark-mode-toggle:hover {
+  background-color: #5a6268;
+}
+
+.dark-mode-toggle .fas {
+  font-size: 16px;
+}
+
+/* Content Sections (Cards) */
+.content-section {
+  background-color: var(--card-background-color);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.content-section h3 {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  color: var(--text-color); /* Input text color */
+  font-size: 16px;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group input[type="password"]::placeholder {
+  color: var(--secondary-color);
+}
+
+.content-section button {
+  padding: 10px 20px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.content-section button:hover {
+  background-color: var(--primary-color);
+  opacity: 0.9;
+}
+
+/* List Box */
+.list-box {
+  background-color: var(--input-bg); /* Use input-bg for list background */
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.list-box ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.list-box ul li {
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.list-box ul li:last-child {
+  border-bottom: none;
+}
+
+.list-box ul li button {
+  background: none;
+  border: none;
+  color: var(--logout-button-bg);
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+  transition: color 0.2s;
+}
+
+.list-box ul li button:hover {
+  color: var(--logout-button-hover-bg);
+}
+
+
+/* Responsive Table Container */
+.responsive-table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background-color: var(--card-background-color);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+  transition: border-color 0.3s;
+}
+
+table th {
+  background-color: var(--table-header-bg);
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+body.dark-mode table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+table input[type="text"],
+table input[type="number"],
+table select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color); /* Input text color */
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+}
+
+table button {
+  padding: 6px 10px;
+  background-color: var(--primary-color);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+table button:hover {
+  background-color: var(--primary-color);
+  opacity: 0.9;
+}
+
+/* Profile Picture Upload */
+.profile-picture-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-picture-container img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture-container input[type="file"] {
+  display: none; /* Hide the default file input */
+}
+
+.profile-picture-container .upload-button {
+  background-color: var(--secondary-color);
+  color: var(--button-text);
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.profile-picture-container .upload-button:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-container {
+      flex-direction: column;
+  }
+
+  .sidebar {
+      width: 100%;
+      height: auto;
+      padding: 15px;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap; /* Allows items to wrap if needed */
+  }
+
+  .sidebar .logo {
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  }
+
+  .sidebar .logo h3 {
+      display: none; /* Hide name in compact view to save space */
+  }
+
+  .sidebar nav {
+      flex-grow: 1; /* Allows nav to take available space */
+      margin-left: 10px; /* Adjusted margin */
+  }
+
+  .sidebar nav ul {
+      display: flex;
+      justify-content: center; /* Center align nav items */
+      flex-wrap: wrap;
+  }
+
+  .sidebar nav ul li {
+      margin: 5px;
+  }
+
+  .sidebar nav ul li a {
+      padding: 8px 12px;
+  }
+
+  .sidebar nav ul li a span {
+      display: none; /* Hide text, only show icons for navigation links */
+  }
+
+  .sidebar .logout-button {
+      width: auto;
+      padding: 8px 12px;
+      margin-left: auto; /* Push logout button to the right */
+  }
+
+  .sidebar .logout-button span {
+      display: none; /* Hide text, only show icon */
+  }
+
+  .main-content {
+      padding: 15px;
+  }
+
+  .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+      padding: 15px;
+  }
+
+  .header h1 {
+      font-size: 22px;
+  }
+
+  .header > div:last-child { /* Targets the color picker and dark mode toggle container */
+      margin-left: 0;
+      width: 100%;
+      justify-content: space-between;
+      display: flex; /* Ensures elements in this div are aligned */
+      align-items: center;
+  }
+
+  .content-section {
+      padding: 20px;
+  }
+
+  .login-box {
+      width: 90%;
+      margin: 50px auto;
+      padding: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar nav ul {
+      flex-direction: column;
+      align-items: center;
+  }
+  .sidebar nav ul li {
+      width: 100%;
+      text-align: center;
+  }
+  .sidebar nav ul li a {
+      justify-content: center;
+  }
+  .sidebar .logout-button {
+      width: 100%;
+      margin-top: 15px;
+  }
+  /* Adjust text size for smaller screens if needed */
+  h1, h2, h3 {
+      font-size: 1.2em;
+  }
+  .form-group label, .list-box ul li {
+      font-size: 0.9em;
+  }
+  table th, table td {
+      font-size: 0.85em;
+      padding: 8px;
+  }
+}
