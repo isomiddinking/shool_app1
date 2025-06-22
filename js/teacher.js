@@ -1,336 +1,282 @@
-let currentTeacher; // Declare globally accessible for other functions
-
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Theme Control Logic (Robust Implementation) ---
-    const textColorPicker = document.getElementById('textColorPicker');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-
-    // Function to apply theme settings
-    function applyTheme() {
-        const savedTextColor = localStorage.getItem('siteTextColor');
-        if (savedTextColor) {
-            document.body.style.setProperty('color', savedTextColor, 'important');
-            if (textColorPicker) textColorPicker.value = savedTextColor;
-        } else {
-            if (textColorPicker) textColorPicker.value = '#333333';
-            document.body.style.setProperty('color', '#333333', 'important');
-        }
-
-        const savedDarkMode = localStorage.getItem('darkMode');
-        if (savedDarkMode === 'enabled') {
-            document.body.classList.add('dark-mode');
-            if (darkModeToggle) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Light Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-            }
-        } else {
-            document.body.classList.remove('dark-mode');
-            if (darkModeToggle) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Dark Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
-            }
-        }
-    }
-
-    applyTheme();
-
-    // Event listener for color picker
-    if (textColorPicker) {
-        textColorPicker.addEventListener('input', (event) => {
-            const selectedColor = event.target.value;
-            document.body.style.setProperty('color', selectedColor, 'important');
-            localStorage.setItem('siteTextColor', selectedColor);
-        });
-    }
-
-    // Event listener for dark mode toggle
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-
-            if (isDarkMode) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Light Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-            } else {
-                darkModeToggle.querySelector('.button-text').textContent = 'Dark Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
-            }
-        });
-    }
-    // --- End Theme Control Logic ---
-
-
-    // --- Existing Teacher Panel Logic ---
-    const currentTeacherLogin = localStorage.getItem('currentTeacherLogin');
-    if (!currentTeacherLogin || localStorage.getItem('loggedInUserRole') !== 'teacher') {
-        window.location.href = 'index.html'; // Redirect if not logged in as teacher
+    // Check if user is logged in as teacher
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!loggedInUser || loggedInUser.role !== 'teacher') {
+        window.location.href = 'index.html'; // Redirect to login if not teacher
         return;
     }
 
-    let teachers = JSON.parse(localStorage.getItem('teachers')) || [];
-    currentTeacher = teachers.find(t => t.login === currentTeacherLogin); // Assign to global variable
+    // Populate teacher profile info
+    const teacherNameSidebar = document.getElementById('teacherNameSidebar');
+    const headerTeacherName = document.getElementById('headerTeacherName');
+    const teacherProfilePic = document.getElementById('teacherProfilePic');
+    const headerTeacherProfilePic = document.getElementById('headerTeacherProfilePic');
+    const teacherProfilePreview = document.getElementById('teacherProfilePreview');
 
-    if (currentTeacher) {
-        document.getElementById('teacherNameSidebar').textContent = currentTeacher.name;
-        document.getElementById('headerTeacherName').textContent = currentTeacher.name;
+    if (teacherNameSidebar) teacherNameSidebar.textContent = loggedInUser.name;
+    if (headerTeacherName) headerTeacherName.textContent = loggedInUser.name;
 
-        // Placeholder for profile picture
-        const teacherProfilePicUrl = localStorage.getItem(`teacherProfilePicUrl_${currentTeacher.login}`) || "https://via.placeholder.com/80/007bff/ffffff?text=TCH";
-        document.getElementById('teacherProfilePic').src = teacherProfilePicUrl;
-        document.getElementById('headerTeacherProfilePic').src = teacherProfilePicUrl;
-        document.getElementById('teacherProfilePreview').src = teacherProfilePicUrl;
-
-
-        // Initial section display
-        window.showTeacherSection('main-dashboard', document.querySelector('.sidebar nav ul li a.active'));
-        window.loadSubjectsForTeacher(); // Load subjects for this teacher
-
-        // Profile settings initialization
-        document.getElementById('teacherLoginEdit').value = currentTeacher.login;
-        document.getElementById('teacherPasswordEdit').value = currentTeacher.password;
-
-        // Handle profile picture input change
-        document.getElementById('teacherProfilePicInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('teacherProfilePreview').src = e.target.result;
-                    localStorage.setItem(`teacherProfilePicUrl_${currentTeacher.login}`, e.target.result);
-                    document.getElementById('teacherProfilePic').src = e.target.result;
-                    document.getElementById('headerTeacherProfilePic').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-    } else {
-        alert('O‘qituvchi ma’lumotlari topilmadi!');
-        window.location.href = 'index.html';
+    const teacherProfilePicUrl = localStorage.getItem(`teacherProfilePic_${loggedInUser.login}`);
+    if (teacherProfilePicUrl) {
+        if (teacherProfilePic) teacherProfilePic.src = teacherProfilePicUrl;
+        if (headerTeacherProfilePic) headerTeacherProfilePic.src = teacherProfilePicUrl;
+        if (teacherProfilePreview) teacherProfilePreview.src = teacherProfilePicUrl;
     }
 
+    // Initialize display of sections
+    showTeacherSection('main-dashboard', document.querySelector('.sidebar nav ul li a.active'));
 
-}); // End of DOMContentLoaded
+    // Load and populate subjects and students for the teacher
+    loadSubjectsForTeacher();
+    document.getElementById('subjectSelect').addEventListener('change', loadStudentsForSelectedSubject);
 
-// Global functions for teacher.html
-window.showTeacherSection = function(sectionId, clickedLink) {
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(section => {
+    // Dark Mode & Text Color (as per login.js, ensure it's also initialized here if needed directly)
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const textColorPicker = document.getElementById('textColorPicker');
+
+    if (darkModeToggle) {
+        const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (savedDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+        updateDarkModeButtonText(savedDarkMode); // Function from login.js
+    }
+
+    if (textColorPicker) {
+        const savedTextColor = localStorage.getItem('textColor');
+        if (savedTextColor) {
+            document.body.style.color = savedTextColor;
+            textColorPicker.value = savedTextColor;
+        }
+    }
+});
+
+// Helper function to update Dark Mode button text (duplicated from login.js for standalone use)
+function updateDarkModeButtonText(isDarkMode) {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        const buttonText = darkModeToggle.querySelector('.button-text');
+        if (buttonText) {
+            buttonText.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        }
+        const icon = darkModeToggle.querySelector('i');
+        if (icon) {
+            icon.classList.remove('fa-moon', 'fa-sun');
+            icon.classList.add(isDarkMode ? 'fa-sun' : 'fa-moon');
+        }
+    }
+}
+
+// Sidebar section switching for teacher
+window.showTeacherSection = function(sectionId, element) {
+    document.querySelectorAll('.content-section').forEach(section => {
         section.style.display = 'none';
     });
     document.getElementById(sectionId).style.display = 'block';
 
-    const navLinks = document.querySelectorAll('.sidebar nav ul li a');
-    navLinks.forEach(link => {
+    document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
         link.classList.remove('active');
     });
-    if (clickedLink) {
-        clickedLink.classList.add('active');
-    }
+    element.classList.add('active');
 };
 
-window.loadSubjectsForTeacher = function() {
+// Load subjects assigned to the current teacher
+function loadSubjectsForTeacher() {
     const subjectSelect = document.getElementById('subjectSelect');
-    subjectSelect.innerHTML = '<option value="">Fanni tanlang</option>'; // Clear existing options
-    const assignments = JSON.parse(localStorage.getItem('subjectTeacherAssignments')) || {};
-    const subjects = [ // Define your subjects here (must match admin.js)
-        { name: "Matematika", id: "math" },
-        { name: "Fizika", id: "physics" },
-        { name: "Kimyo", id: "chemistry" },
-        { name: "Biologiya", id: "biology" },
-        { name: "Tarix", id: "history" },
-        { name: "Adabiyot", id: "literature" },
-        { name: "Ona tili", id: "motherTongue" },
-        { name: "Ingliz tili", id: "english" },
-        { name: "Jismoniy tarbiya", id: "pe" },
-        { name: "Chizmachilik", id: "drawing" }
-    ];
+    subjectSelect.innerHTML = '<option value="">Fanni tanlang</option>'; // Reset options
 
-    let hasSubjects = false;
-    for (const subjectId in assignments) {
-        // Check if the current logged-in teacher is assigned to this subject
-        if (currentTeacher && assignments[subjectId] === currentTeacher.login) {
-            const subject = subjects.find(s => s.id === subjectId);
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    const teachers = JSON.parse(localStorage.getItem('teachers')) || [];
+    const subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+    const assignments = JSON.parse(localStorage.getItem('subjectTeacherAssignments')) || {};
+
+    const currentTeacher = teachers.find(t => t.login === loggedInUser.login);
+
+    if (currentTeacher) {
+        // Find subjects assigned to this teacher
+        const assignedSubjectIds = Object.keys(assignments).filter(subjectId => {
+            return assignments[subjectId] == currentTeacher.id;
+        });
+
+        assignedSubjectIds.forEach(subjectId => {
+            const subject = subjects.find(s => s.id == subjectId);
             if (subject) {
                 const option = document.createElement('option');
-                option.value = subject.name; // Use subject name as value
+                option.value = subject.id;
                 option.textContent = subject.name;
                 subjectSelect.appendChild(option);
-                hasSubjects = true;
-            }
-        }
-    }
-
-    if (!hasSubjects) {
-         subjectSelect.innerHTML = '<option value="">Sizga biriktirilgan fanlar mavjud emas.</option>';
-         // Clear student table if no subjects
-         document.getElementById('studentTable').querySelector('tbody').innerHTML = '<tr><td colspan="4">Fanni tanlang.</td></tr>';
-    }
-
-    // Add event listener to subject select if not already present
-    // Ensure this listener is only added once
-    if (!subjectSelect.hasAttribute('data-listener-added')) {
-        subjectSelect.addEventListener('change', function() {
-            const selectedSubject = this.value;
-            if (selectedSubject) {
-                window.loadStudentsForSubject(selectedSubject);
-            } else {
-                document.getElementById('studentTable').querySelector('tbody').innerHTML = '<tr><td colspan="4">Fanni tanlang.</td></tr>';
             }
         });
-        subjectSelect.setAttribute('data-listener-added', 'true');
     }
+}
 
-    // If there are subjects, and none is selected, or if the previously selected subject is no longer assigned,
-    // load students for the first available subject.
-    if (hasSubjects && subjectSelect.selectedIndex === 0 && subjectSelect.options.length > 1) {
-        subjectSelect.selectedIndex = 1; // Select the first actual subject
-        window.loadStudentsForSubject(subjectSelect.value);
-    } else if (subjectSelect.value) { // If a subject is already selected (e.g., on refresh), reload students for it
-         window.loadStudentsForSubject(subjectSelect.value);
-    }
-};
-
-window.loadStudentsForSubject = function(subjectName) {
-    const allStudents = JSON.parse(localStorage.getItem('students')) || [];
-    // Filter students by the current teacher's assigned class (assuming a teacher teaches only their assigned class)
-    const studentsInClass = allStudents.filter(s => currentTeacher && s.className === currentTeacher.className);
-
+// Load students for the selected subject and current teacher's classes
+function loadStudentsForSelectedSubject() {
     const studentTableBody = document.getElementById('studentTable').querySelector('tbody');
-    studentTableBody.innerHTML = '';
+    studentTableBody.innerHTML = ''; // Clear existing students
 
-    if (studentsInClass.length === 0) {
-        studentTableBody.innerHTML = '<tr><td colspan="4">Bu sinfda o‘quvchilar mavjud emas.</td></tr>';
+    const selectedSubjectId = document.getElementById('subjectSelect').value;
+    if (!selectedSubjectId) return;
+
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    const teachers = JSON.parse(localStorage.getItem('teachers')) || [];
+
+    const currentTeacher = teachers.find(t => t.login === loggedInUser.login);
+
+    if (currentTeacher) {
+        const studentsInTeacherClasses = students.filter(s => s.class === currentTeacher.class);
+
+        studentsInTeacherClasses.forEach(student => {
+            const row = studentTableBody.insertRow();
+            row.insertCell().textContent = `${student.name} ${student.surname}`;
+
+            // Attendance (simple checkbox)
+            const attendanceCell = row.insertCell();
+            const attendanceCheckbox = document.createElement('input');
+            attendanceCheckbox.type = 'checkbox';
+            attendanceCheckbox.checked = student.attendance.some(a => a.subjectId == selectedSubjectId && a.date === new Date().toISOString().slice(0, 10)); // Check if attendance already marked for today
+            attendanceCheckbox.dataset.studentId = student.id;
+            attendanceCheckbox.dataset.subjectId = selectedSubjectId;
+            attendanceCell.appendChild(attendanceCheckbox);
+
+            // Marks (input field for grade)
+            const markCell = row.insertCell();
+            const markInput = document.createElement('input');
+            markInput.type = 'number';
+            markInput.min = '1';
+            markInput.max = '5';
+            markInput.style.width = '60px';
+            const existingMark = student.marks.find(m => m.subjectId == selectedSubjectId);
+            if (existingMark) {
+                markInput.value = existingMark.mark;
+            }
+            markInput.dataset.studentId = student.id;
+            markInput.dataset.subjectId = selectedSubjectId;
+            markCell.appendChild(markInput);
+
+            // Actions (e.g., Save for individual student - though we have a global save)
+            const actionsCell = row.insertCell();
+            // You can add individual save buttons here if needed, or rely on the global "O'zgarishlarni saqlash" button
+        });
+    }
+}
+
+window.saveChanges = function() {
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    const selectedSubjectId = document.getElementById('subjectSelect').value;
+    const currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    if (!selectedSubjectId) {
+        alert('Iltimos, fanni tanlang!');
         return;
     }
 
-    studentsInClass.forEach(student => {
-        const row = studentTableBody.insertRow();
-        row.insertCell().textContent = `${student.name} ${student.surname}`;
+    document.querySelectorAll('#studentTable tbody tr').forEach(row => {
+        const studentId = row.querySelector('input[type="checkbox"]').dataset.studentId;
+        const attendanceCheckbox = row.querySelector('input[type="checkbox"]');
+        const markInput = row.querySelector('input[type="number"]');
 
-        // Davomat (Attendance) - Example: using a checkbox
-        const attendanceCell = row.insertCell();
-        const attendanceCheckbox = document.createElement('input');
-        attendanceCheckbox.type = 'checkbox';
-        attendanceCheckbox.id = `attendance-${student.id}-${subjectName.replace(/\s/g, '')}`;
-        // Load previous attendance if available (you would need a structure for this in localStorage)
-        const today = new Date().toISOString().split('T')[0];
-        if (student.attendance && student.attendance[subjectName] && student.attendance[subjectName][today]) {
-            attendanceCheckbox.checked = student.attendance[subjectName][today];
+        const student = students.find(s => s.id == studentId);
+        if (student) {
+            // Update attendance
+            const existingAttendanceIndex = student.attendance.findIndex(a => a.subjectId == selectedSubjectId && a.date === currentDate);
+            if (attendanceCheckbox.checked) {
+                if (existingAttendanceIndex === -1) {
+                    student.attendance.push({ subjectId: parseInt(selectedSubjectId), date: currentDate, present: true });
+                } else {
+                    student.attendance[existingAttendanceIndex].present = true;
+                }
+            } else {
+                // If unchecked, remove or mark as absent
+                if (existingAttendanceIndex !== -1) {
+                    student.attendance.splice(existingAttendanceIndex, 1); // Remove if unchecked
+                }
+            }
+
+            // Update mark
+            const newMark = markInput.value ? parseInt(markInput.value) : null;
+            const existingMarkIndex = student.marks.findIndex(m => m.subjectId == selectedSubjectId);
+            if (newMark !== null) {
+                if (existingMarkIndex === -1) {
+                    student.marks.push({ subjectId: parseInt(selectedSubjectId), mark: newMark, date: currentDate });
+                } else {
+                    student.marks[existingMarkIndex].mark = newMark;
+                    student.marks[existingMarkIndex].date = currentDate; // Update date of last mark
+                }
+            } else {
+                // If mark is cleared, remove it
+                if (existingMarkIndex !== -1) {
+                    student.marks.splice(existingMarkIndex, 1);
+                }
+            }
         }
-
-        attendanceCell.appendChild(attendanceCheckbox);
-
-        // Baho (Grade) - Example: using a number input
-        const gradeCell = row.insertCell();
-        const gradeInput = document.createElement('input');
-        gradeInput.type = 'number';
-        gradeInput.min = '1';
-        gradeInput.max = '5';
-        // Load previous grade if available (last grade for this subject)
-        const lastMark = (student.marks || []).filter(m => m.subject === subjectName).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-        gradeInput.value = lastMark ? lastMark.grade : '';
-        gradeInput.id = `grade-${student.id}-${subjectName.replace(/\s/g, '')}`;
-        gradeCell.appendChild(gradeInput);
-
-        // Amallar (Actions) - Example: Save button for individual row
-        const actionsCell = row.insertCell();
-        const saveButton = document.createElement('button');
-        saveButton.textContent = 'Saqlash';
-        saveButton.onclick = () => window.saveStudentData(student.id, subjectName, attendanceCheckbox.checked, gradeInput.value);
-        actionsCell.appendChild(saveButton);
     });
+
+    localStorage.setItem('students', JSON.stringify(students));
+    alert('O\'zgarishlar saqlandi!');
+    loadStudentsForSelectedSubject(); // Re-render to show updated state
 };
 
-window.saveStudentData = function(studentId, subjectName, attendance, grade) {
-    let students = JSON.parse(localStorage.getItem('students')) || [];
-    const studentIndex = students.findIndex(s => s.id === studentId);
 
-    if (studentIndex !== -1) {
-        let student = students[studentIndex];
-        if (!student.marks) {
-            student.marks = [];
-        }
-        if (!student.attendance) {
-            student.attendance = {};
-        }
-
-        // Save attendance (simple example: true/false for today)
-        const today = new Date().toISOString().split('T')[0];
-        if (!student.attendance[subjectName]) {
-            student.attendance[subjectName] = {};
-        }
-        student.attendance[subjectName][today] = attendance;
-
-        // Save grade
-        if (grade) {
-            // Remove existing mark for today (if any) to avoid duplicates for the same day
-            student.marks = student.marks.filter(m => !(m.subject === subjectName && m.date === today));
-            student.marks.push({
-                subject: subjectName,
-                date: today,
-                grade: parseInt(grade)
-            });
-        }
-
-        students[studentIndex] = student;
-        localStorage.setItem('students', JSON.stringify(students));
-        alert(`${student.name} ${subjectName} fani bo'yicha ma'lumotlari saqlandi!`);
-    }
-};
-
-window.saveChanges = function() {
-    alert('O‘zgarishlar saqlandi! (Har bir o‘quvchi qatorida individual saqlash tugmasi orqali saqlanadi.)');
-    // Note: This button is currently a placeholder as individual row save buttons are implemented.
-    // If you want a single "Save All" button, this function would need to iterate through all rows.
-};
-
+// --- Teacher Profile Settings ---
 window.updateTeacherProfile = function() {
-    const newLogin = document.getElementById('teacherLoginEdit').value.trim();
-    const newPassword = document.getElementById('teacherPasswordEdit').value.trim();
-    const currentTeacherLogin = localStorage.getItem('currentTeacherLogin');
+    const teacherLoginEdit = document.getElementById('teacherLoginEdit').value;
+    const teacherPasswordEdit = document.getElementById('teacherPasswordEdit').value;
+    const teacherProfilePicInput = document.getElementById('teacherProfilePicInput');
 
-    if (newLogin && newPassword) {
-        let teachers = JSON.parse(localStorage.getItem('teachers')) || [];
-        let teacherToUpdate = teachers.find(t => t.login === currentTeacherLogin);
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    let teachers = JSON.parse(localStorage.getItem('teachers')) || [];
+    const currentTeacherIndex = teachers.findIndex(t => t.login === loggedInUser.login);
 
-        if (!teacherToUpdate) {
-            alert('O‘qituvchi ma’lumotlari topilmadi!');
-            return;
-        }
-
-        // Ensure the new login is unique if changed
-        if (newLogin !== teacherToUpdate.login && teachers.some(t => t.login === newLogin)) {
-            alert('Bu login allaqachon boshqa o‘qituvchi tomonidan ishlatilmoqda!');
-            return;
-        }
-
-        // Update the current teacher's data
-        teacherToUpdate.login = newLogin;
-        teacherToUpdate.password = newPassword;
-
-        // Find and update the teacher in the array
-        const teacherIndex = teachers.findIndex(t => t.id === teacherToUpdate.id);
-        if (teacherIndex !== -1) {
-            teachers[teacherIndex] = teacherToUpdate;
+    if (currentTeacherIndex !== -1) {
+        if (teacherLoginEdit && teacherPasswordEdit) {
+            // Check for duplicate login during edit
+            if (teachers.some((t, index) => t.login === teacherLoginEdit && index !== currentTeacherIndex)) {
+                alert('Bu login allaqachon mavjud. Iltimos, boshqa login tanlang.');
+                return;
+            }
+            teachers[currentTeacherIndex].login = teacherLoginEdit;
+            teachers[currentTeacherIndex].password = teacherPasswordEdit;
             localStorage.setItem('teachers', JSON.stringify(teachers));
-            localStorage.setItem('currentTeacherLogin', newLogin); // Update current login in session
-            alert('Profil muvaffaqiyatli yangilandi!');
-            // Update displayed names
-            document.getElementById('teacherNameSidebar').textContent = teacherToUpdate.name;
-            document.getElementById('headerTeacherName').textContent = teacherToUpdate.name;
+
+            // Update loggedInUser in localStorage to reflect new login
+            loggedInUser.login = teacherLoginEdit;
+            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+
+            if (teacherNameSidebar) teacherNameSidebar.textContent = loggedInUser.name;
+            if (headerTeacherName) headerTeacherName.textContent = loggedInUser.name;
+
+            alert('Profil logini va paroli yangilandi!');
+        } else {
+            alert('Login va parolni to\'ldiring.');
         }
-    } else {
-        alert('Iltimos, login va parolni to‘ldiring!');
+
+        if (teacherProfilePicInput.files.length > 0) {
+            const file = teacherProfilePicInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                localStorage.setItem(`teacherProfilePic_${loggedInUser.login}`, imageUrl); // Save based on current login
+                if (teacherProfilePic) teacherProfilePic.src = imageUrl;
+                if (headerTeacherProfilePic) headerTeacherProfilePic.src = imageUrl;
+                if (teacherProfilePreview) teacherProfilePreview.src = imageUrl;
+                alert('Profil rasmi yangilandi!');
+            };
+            reader.readAsDataURL(file);
+        }
     }
 };
 
-window.logout = function() {
-    localStorage.removeItem('loggedInUserRole');
-    localStorage.removeItem('currentAdminLogin');
-    localStorage.removeItem('currentTeacherLogin');
-    localStorage.removeItem('currentStudentLogin');
-    window.location.href = 'index.html';
-};
+// Event listener for teacher profile picture input
+document.addEventListener('DOMContentLoaded', () => {
+    const teacherProfilePicInput = document.getElementById('teacherProfilePicInput');
+    if (teacherProfilePicInput) {
+        teacherProfilePicInput.addEventListener('change', function() {
+            const [file] = teacherProfilePicInput.files;
+            if (file) {
+                teacherProfilePreview.src = URL.createObjectURL(file);
+            }
+        });
+    }
+});

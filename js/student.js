@@ -1,214 +1,183 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Theme Control Logic (Robust Implementation) ---
-    const textColorPicker = document.getElementById('textColorPicker');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-
-    // Function to apply theme settings
-    function applyTheme() {
-        const savedTextColor = localStorage.getItem('siteTextColor');
-        if (savedTextColor) {
-            document.body.style.setProperty('color', savedTextColor, 'important');
-            if (textColorPicker) textColorPicker.value = savedTextColor;
-        } else {
-            if (textColorPicker) textColorPicker.value = '#333333';
-            document.body.style.setProperty('color', '#333333', 'important');
-        }
-
-        const savedDarkMode = localStorage.getItem('darkMode');
-        if (savedDarkMode === 'enabled') {
-            document.body.classList.add('dark-mode');
-            if (darkModeToggle) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Light Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-            }
-        } else {
-            document.body.classList.remove('dark-mode');
-            if (darkModeToggle) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Dark Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
-            }
-        }
-    }
-
-    applyTheme();
-
-    // Event listener for color picker
-    if (textColorPicker) {
-        textColorPicker.addEventListener('input', (event) => {
-            const selectedColor = event.target.value;
-            document.body.style.setProperty('color', selectedColor, 'important');
-            localStorage.setItem('siteTextColor', selectedColor);
-        });
-    }
-
-    // Event listener for dark mode toggle
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-
-            if (isDarkMode) {
-                darkModeToggle.querySelector('.button-text').textContent = 'Light Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-            } else {
-                darkModeToggle.querySelector('.button-text').textContent = 'Dark Mode';
-                darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
-            }
-        });
-    }
-    // --- End Theme Control Logic ---
-
-
-    // --- Existing Student Panel Logic ---
-    const currentStudentLogin = localStorage.getItem('currentStudentLogin');
-    if (!currentStudentLogin || localStorage.getItem('loggedInUserRole') !== 'student') {
-        window.location.href = 'index.html'; // Redirect if not logged in as student
+    // Check if user is logged in as student
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!loggedInUser || loggedInUser.role !== 'student') {
+        window.location.href = 'index.html'; // Redirect to login if not student
         return;
     }
 
-    let students = JSON.parse(localStorage.getItem('students')) || [];
-    let currentStudent = students.find(s => s.login === currentStudentLogin);
+    // Populate student profile info
+    const studentNameSidebar = document.getElementById('studentNameSidebar');
+    const headerStudentName = document.getElementById('headerStudentName');
+    const studentProfilePic = document.getElementById('studentProfilePic');
+    const headerStudentProfilePic = document.getElementById('headerStudentProfilePic');
+    const studentProfilePreview = document.getElementById('studentProfilePreview');
 
-    if (currentStudent) {
-        document.getElementById('studentNameSidebar').textContent = `${currentStudent.name} ${currentStudent.surname}`;
-        document.getElementById('headerStudentName').textContent = `${currentStudent.name} ${currentStudent.surname}`;
+    if (studentNameSidebar) studentNameSidebar.textContent = `${loggedInUser.name} ${loggedInUser.surname}`;
+    if (headerStudentName) headerStudentName.textContent = `${loggedInUser.name} ${loggedInUser.surname}`;
 
-        // Placeholder for profile picture
-        const studentProfilePicUrl = localStorage.getItem(`studentProfilePicUrl_${currentStudent.login}`) || "https://via.placeholder.com/80/007bff/ffffff?text=STU";
-        document.getElementById('studentProfilePic').src = studentProfilePicUrl;
-        document.getElementById('headerStudentProfilePic').src = studentProfilePicUrl;
-        document.getElementById('studentProfilePreview').src = studentProfilePicUrl;
-
-        // Initial section display
-        window.showStudentSection('main-dashboard', document.querySelector('.sidebar nav ul li a.active'));
-        window.loadClassmates(currentStudent.className);
-        window.loadStudentMarks(currentStudent.login);
-
-        // Profile settings initialization
-        document.getElementById('studentLoginEdit').value = currentStudent.login;
-        document.getElementById('studentPasswordEdit').value = currentStudent.password;
-
-        // Handle profile picture input change
-        document.getElementById('studentProfilePicInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('studentProfilePreview').src = e.target.result;
-                    localStorage.setItem(`studentProfilePicUrl_${currentStudent.login}`, e.target.result);
-                    document.getElementById('studentProfilePic').src = e.target.result;
-                    document.getElementById('headerStudentProfilePic').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-    } else {
-        alert('O‘quvchi ma’lumotlari topilmadi!');
-        window.location.href = 'index.html';
+    const studentProfilePicUrl = localStorage.getItem(`studentProfilePic_${loggedInUser.login}`);
+    if (studentProfilePicUrl) {
+        if (studentProfilePic) studentProfilePic.src = studentProfilePicUrl;
+        if (headerStudentProfilePic) headerStudentProfilePic.src = studentProfilePicUrl;
+        if (studentProfilePreview) studentProfilePreview.src = studentProfilePicUrl;
     }
 
-}); // End of DOMContentLoaded
+    // Initialize display of sections
+    showStudentSection('main-dashboard', document.querySelector('.sidebar nav ul li a.active'));
 
-// Global functions for student.html
-window.showStudentSection = function(sectionId, clickedLink) {
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(section => {
+    // Load and display classmates and marks
+    loadClassmates();
+    loadStudentMarks();
+
+    // Dark Mode & Text Color (as per login.js, ensure it's also initialized here if needed directly)
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const textColorPicker = document.getElementById('textColorPicker');
+
+    if (darkModeToggle) {
+        const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (savedDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+        updateDarkModeButtonText(savedDarkMode); // Function from login.js
+    }
+
+    if (textColorPicker) {
+        const savedTextColor = localStorage.getItem('textColor');
+        if (savedTextColor) {
+            document.body.style.color = savedTextColor;
+            textColorPicker.value = savedTextColor;
+        }
+    }
+});
+
+// Helper function to update Dark Mode button text (duplicated from login.js for standalone use)
+function updateDarkModeButtonText(isDarkMode) {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        const buttonText = darkModeToggle.querySelector('.button-text');
+        if (buttonText) {
+            buttonText.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+        }
+        const icon = darkModeToggle.querySelector('i');
+        if (icon) {
+            icon.classList.remove('fa-moon', 'fa-sun');
+            icon.classList.add(isDarkMode ? 'fa-sun' : 'fa-moon');
+        }
+    }
+}
+
+// Sidebar section switching for student
+window.showStudentSection = function(sectionId, element) {
+    document.querySelectorAll('.content-section').forEach(section => {
         section.style.display = 'none';
     });
     document.getElementById(sectionId).style.display = 'block';
 
-    const navLinks = document.querySelectorAll('.sidebar nav ul li a');
-    navLinks.forEach(link => {
+    document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
         link.classList.remove('active');
     });
-    if (clickedLink) {
-        clickedLink.classList.add('active');
-    }
+    element.classList.add('active');
 };
 
-window.loadClassmates = function(className) {
-    const allStudents = JSON.parse(localStorage.getItem('students')) || [];
-    const currentStudentLogin = localStorage.getItem('currentStudentLogin');
-    const classmates = allStudents.filter(s => s.className === className && s.login !== currentStudentLogin);
+// Load classmates
+function loadClassmates() {
     const classmatesTableBody = document.getElementById('classmatesTable').querySelector('tbody');
     classmatesTableBody.innerHTML = '';
-
-    if (classmates.length === 0) {
-        classmatesTableBody.innerHTML = '<tr><td colspan="2">Sinfdoshlar mavjud emas.</td></tr>';
-        return;
-    }
-
-    classmates.forEach(mate => {
-        const row = classmatesTableBody.insertRow();
-        row.insertCell().textContent = `${mate.name} ${mate.surname}`;
-        row.insertCell().textContent = mate.login;
-    });
-};
-
-window.loadStudentMarks = function(studentLogin) {
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
     const students = JSON.parse(localStorage.getItem('students')) || [];
-    const student = students.find(s => s.login === studentLogin);
+
+    const classmates = students.filter(s => s.class === loggedInUser.class && s.login !== loggedInUser.login);
+
+    classmates.forEach(student => {
+        const row = classmatesTableBody.insertRow();
+        row.insertCell().textContent = `${student.name} ${student.surname}`;
+        row.insertCell().textContent = student.login;
+    });
+}
+
+// Load student's marks
+function loadStudentMarks() {
     const marksTableBody = document.getElementById('marksTable').querySelector('tbody');
     marksTableBody.innerHTML = '';
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    const subjects = JSON.parse(localStorage.getItem('subjects')) || [];
 
-    if (student && student.marks && student.marks.length > 0) {
-        student.marks.forEach(mark => {
-            const row = marksTableBody.insertRow();
-            row.insertCell().textContent = mark.subject;
-            row.insertCell().textContent = mark.date;
-            row.insertCell().textContent = mark.grade;
+    const currentStudent = students.find(s => s.login === loggedInUser.login);
+
+    if (currentStudent && currentStudent.marks) {
+        currentStudent.marks.forEach(mark => {
+            const subject = subjects.find(s => s.id === mark.subjectId);
+            if (subject) {
+                const row = marksTableBody.insertRow();
+                row.insertCell().textContent = subject.name;
+                row.insertCell().textContent = mark.date;
+                row.insertCell().textContent = mark.mark;
+            }
         });
-    } else {
-        marksTableBody.innerHTML = '<tr><td colspan="3">Baholar mavjud emas.</td></tr>';
     }
-};
+}
 
+
+// --- Student Profile Settings ---
 window.updateStudentProfile = function() {
-    const newLogin = document.getElementById('studentLoginEdit').value.trim();
-    const newPassword = document.getElementById('studentPasswordEdit').value.trim();
-    const currentStudentLogin = localStorage.getItem('currentStudentLogin');
+    const studentLoginEdit = document.getElementById('studentLoginEdit').value;
+    const studentPasswordEdit = document.getElementById('studentPasswordEdit').value;
+    const studentProfilePicInput = document.getElementById('studentProfilePicInput');
 
-    if (newLogin && newPassword) {
-        let students = JSON.parse(localStorage.getItem('students')) || [];
-        let currentStudent = students.find(s => s.login === currentStudentLogin);
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    const currentStudentIndex = students.findIndex(s => s.login === loggedInUser.login);
 
-        if (!currentStudent) {
-            alert('O‘quvchi ma’lumotlari topilmadi!');
-            return;
-        }
-
-        // Ensure the new login is unique if changed
-        if (newLogin !== currentStudent.login && students.some(s => s.login === newLogin)) {
-            alert('Bu login allaqachon boshqa o‘quvchi tomonidan ishlatilmoqda!');
-            return;
-        }
-
-        // Update the current student's data
-        currentStudent.login = newLogin;
-        currentStudent.password = newPassword;
-
-        // Find and update the student in the array
-        const studentIndex = students.findIndex(s => s.id === currentStudent.id);
-        if (studentIndex !== -1) {
-            students[studentIndex] = currentStudent;
+    if (currentStudentIndex !== -1) {
+        if (studentLoginEdit && studentPasswordEdit) {
+            // Check for duplicate login during edit
+            if (students.some((s, index) => s.login === studentLoginEdit && index !== currentStudentIndex)) {
+                alert('Bu login allaqachon mavjud. Iltimos, boshqa login tanlang.');
+                return;
+            }
+            students[currentStudentIndex].login = studentLoginEdit;
+            students[currentStudentIndex].password = studentPasswordEdit;
             localStorage.setItem('students', JSON.stringify(students));
-            localStorage.setItem('currentStudentLogin', newLogin); // Update current login in session
-            alert('Profil muvaffaqiyatli yangilandi!');
-            // Update displayed names
-            document.getElementById('studentNameSidebar').textContent = `${currentStudent.name} ${currentStudent.surname}`;
-            document.getElementById('headerStudentName').textContent = `${currentStudent.name} ${currentStudent.surname}`;
+
+            // Update loggedInUser in localStorage to reflect new login
+            loggedInUser.login = studentLoginEdit;
+            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+
+            if (studentNameSidebar) studentNameSidebar.textContent = `${loggedInUser.name} ${loggedInUser.surname}`;
+            if (headerStudentName) headerStudentName.textContent = `${loggedInUser.name} ${loggedInUser.surname}`;
+
+            alert('Profil logini va paroli yangilandi!');
+        } else {
+            alert('Login va parolni to\'ldiring.');
         }
-    } else {
-        alert('Iltimos, login va parolni to‘ldiring!');
+
+        if (studentProfilePicInput.files.length > 0) {
+            const file = studentProfilePicInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                localStorage.setItem(`studentProfilePic_${loggedInUser.login}`, imageUrl); // Save based on current login
+                if (studentProfilePic) studentProfilePic.src = imageUrl;
+                if (headerStudentProfilePic) headerStudentProfilePic.src = imageUrl;
+                if (studentProfilePreview) studentProfilePreview.src = imageUrl;
+                alert('Profil rasmi yangilandi!');
+            };
+            reader.readAsDataURL(file);
+        }
     }
 };
 
-window.logout = function() {
-    localStorage.removeItem('loggedInUserRole');
-    localStorage.removeItem('currentAdminLogin');
-    localStorage.removeItem('currentTeacherLogin');
-    localStorage.removeItem('currentStudentLogin');
-    window.location.href = 'index.html';
-};
+// Event listener for student profile picture input
+document.addEventListener('DOMContentLoaded', () => {
+    const studentProfilePicInput = document.getElementById('studentProfilePicInput');
+    if (studentProfilePicInput) {
+        studentProfilePicInput.addEventListener('change', function() {
+            const [file] = studentProfilePicInput.files;
+            if (file) {
+                studentProfilePreview.src = URL.createObjectURL(file);
+            }
+        });
+    }
+});
